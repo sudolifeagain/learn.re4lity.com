@@ -15,3 +15,7 @@ If you are developing a production application, we recommend using TypeScript wi
 ## start
 
 npm run dev
+
+## deploy
+
+npm run deploy
