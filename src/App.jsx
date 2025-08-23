@@ -25,4 +25,4 @@ export default function App() {
       </SettingsProvider> {/* <-- 追加 */}
     </ThemeProvider>
   );
-} 
+}
