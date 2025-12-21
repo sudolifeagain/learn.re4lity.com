@@ -7,7 +7,7 @@ const createDisplayString = (shortcut) => {
   // MacではCmd、WindowsではCtrlを優先的に表示
   if (shortcut.metaKey) parts.push('Cmd');
   else if (shortcut.ctrlKey) parts.push('Ctrl');
-  
+
   if (shortcut.altKey) parts.push('Alt');
   if (shortcut.shiftKey) parts.push('Shift');
   parts.push(shortcut.key.toUpperCase());
@@ -83,4 +83,4 @@ const SettingsModal = ({ isOpen, onClose }) => {
   );
 };
 
-export default SettingsModal;
+export default React.memo(SettingsModal);

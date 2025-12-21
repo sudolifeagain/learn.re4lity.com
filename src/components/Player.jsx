@@ -31,4 +31,4 @@ const Player = ({ youtubeId, onReady, onStateChange }) => {
   );
 };
 
-export default Player;
+export default React.memo(Player);

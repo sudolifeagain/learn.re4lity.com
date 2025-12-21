@@ -17,4 +17,4 @@ const ThemeSwitcher = () => {
     );
 };
 
-export default ThemeSwitcher;
+export default React.memo(ThemeSwitcher);

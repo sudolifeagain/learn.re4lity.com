@@ -14,7 +14,7 @@ const StudyPage = ({ videoList }) => {
   const { videoId } = useParams();
   const videoData = videoList.find(v => v.id === videoId);
   const rowRefs = useRef({});
-  
+
   const { shortcuts } = useContext(SettingsContext);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
@@ -155,46 +155,46 @@ const StudyPage = ({ videoList }) => {
     return () => { window.removeEventListener('keydown', handleKeyDown); };
   }, [shortcuts, handleAddBookmark, handleSyncScroll]);
 
-  const handlePlayerReady = (event) => setPlayer(event.target);
+  const handlePlayerReady = useCallback((event) => setPlayer(event.target), []);
 
-  const handlePlayerStateChange = (event) => {
-    setPlayerState(event.data); // (NEW) プレイヤーの状態をstateに保存
+  const handlePlayerStateChange = useCallback((event) => {
+    setPlayerState(event.data);
     if (recordingMemoIndex !== null && event.data === window.YT.PlayerState.PAUSED) {
       handleTimestampUpdate(recordingMemoIndex);
       setRecordingMemoIndex(null);
     }
-  };
-  
-  const handleJumpToTime = (timestamp) => {
+  }, [recordingMemoIndex, handleTimestampUpdate]);
+
+  const handleJumpToTime = useCallback((timestamp) => {
     if (player && typeof timestamp === 'string') {
       const seconds = timeToSeconds(timestamp);
       player.seekTo(seconds, true);
       player.playVideo();
     }
-  };
+  }, [player]);
 
-  const handleSubtitleTimestampClick = (e) => {
+  const handleSubtitleTimestampClick = useCallback((e) => {
     if (isJumpModeOn) {
       const timestamp = e.currentTarget.dataset.timestamp;
       handleJumpToTime(timestamp);
     }
-  };
+  }, [isJumpModeOn, handleJumpToTime]);
 
-  const handleJumpToBookmark = (bookmark) => {
+  const handleJumpToBookmark = useCallback((bookmark) => {
     const targetRow = rowRefs.current[bookmark.index];
     if (targetRow) {
       targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
     handleJumpToTime(bookmark.timestamp);
-  };
-    
-  const handleImportClick = () => { fileInputRef.current.click(); };
-  
-  const handleFileImport = (event) => {
+  }, [handleJumpToTime]);
+
+  const handleImportClick = useCallback(() => { fileInputRef.current.click(); }, []);
+
+  const handleFileImport = useCallback((event) => {
     const file = event.target.files[0];
     handleImportMemos(file);
     event.target.value = null;
-  };
+  }, [handleImportMemos]);
 
   if (!videoData) {
     return <div className="study-page">動画が見つかりません。</div>;
@@ -262,9 +262,9 @@ const StudyPage = ({ videoList }) => {
           </div>
           <div className="column">
             {subtitles.map((subtitle, index) => (
-              <div 
-                key={subtitle.time + index} 
-                ref={el => rowRefs.current[index] = el} 
+              <div
+                key={subtitle.time + index}
+                ref={el => rowRefs.current[index] = el}
                 className={`content-row ${memos[index]?.isBookmark ? 'bookmarked' : ''} ${activeSubtitleIndex === index ? 'active' : ''}`}
               >
                 <div className="subtitle-cell">
