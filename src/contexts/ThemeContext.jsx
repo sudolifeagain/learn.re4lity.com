@@ -28,34 +28,70 @@ const hexToHsl = (hex) => {
   return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)];
 };
 
+// ダークモード設定をlocalStorageから読み込む
+const loadDarkMode = () => {
+  try {
+    const saved = localStorage.getItem('isDarkMode');
+    if (saved !== null) return JSON.parse(saved);
+    // システム設定を確認
+    return window.matchMedia?.('(prefers-color-scheme: dark)').matches ?? true;
+  } catch {
+    return true;
+  }
+};
+
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-    const [accentColor, setAccentColor] = useState('#008080'); // デフォルトカラー (Teal)
+  const [accentColor, setAccentColor] = useState('#008080');
+  const [isDarkMode, setIsDarkMode] = useState(loadDarkMode);
 
-    useEffect(() => {
-        const [h] = hexToHsl(accentColor);
-        
-        // 選択されたアクセントカラーの色相(H)を基準に、他の色を生成
-        const baseColor = `hsl(${h}, 25%, 25%)`;
-        const bgComponentColor = `hsl(${h}, 25%, 20%)`;
-        const borderColor = `hsl(${h}, 15%, 35%)`;
-        const bgHoverColor = `hsl(${h}, 25%, 30%)`;
+  // ダークモードをlocalStorageに保存
+  useEffect(() => {
+    try {
+      localStorage.setItem('isDarkMode', JSON.stringify(isDarkMode));
+    } catch (e) {
+      console.error('Failed to save dark mode setting', e);
+    }
+  }, [isDarkMode]);
 
-        const root = document.documentElement;
-        root.style.setProperty('--accent-color', accentColor);
-        root.style.setProperty('--base-color', baseColor);
-        root.style.setProperty('--bg-component-color', bgComponentColor);
-        root.style.setProperty('--border-color', borderColor);
-        root.style.setProperty('--bg-hover-color', bgHoverColor);
+  useEffect(() => {
+    const [h] = hexToHsl(accentColor);
+    const root = document.documentElement;
 
-    }, [accentColor]);
+    if (isDarkMode) {
+      // ダークモード
+      root.style.setProperty('--accent-color', accentColor);
+      root.style.setProperty('--base-color', `hsl(${h}, 25%, 12%)`);
+      root.style.setProperty('--bg-component-color', `hsl(${h}, 25%, 18%)`);
+      root.style.setProperty('--border-color', `hsl(${h}, 15%, 30%)`);
+      root.style.setProperty('--bg-hover-color', `hsl(${h}, 25%, 25%)`);
+      root.style.setProperty('--text-color', '#FFFFFF');
+      root.style.setProperty('--text-secondary-color', '#CCCCCC');
+    } else {
+      // ライトモード
+      root.style.setProperty('--accent-color', accentColor);
+      root.style.setProperty('--base-color', `hsl(${h}, 15%, 95%)`);
+      root.style.setProperty('--bg-component-color', `hsl(${h}, 20%, 100%)`);
+      root.style.setProperty('--border-color', `hsl(${h}, 15%, 80%)`);
+      root.style.setProperty('--bg-hover-color', `hsl(${h}, 20%, 90%)`);
+      root.style.setProperty('--text-color', '#1a1a1a');
+      root.style.setProperty('--text-secondary-color', '#555555');
+    }
+  }, [accentColor, isDarkMode]);
 
-    const value = useMemo(() => ({ accentColor, setAccentColor }), [accentColor]);
+  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
 
-    return (
-        <ThemeContext.Provider value={value}>
-            {children}
-        </ThemeContext.Provider>
-    );
+  const value = useMemo(() => ({
+    accentColor,
+    setAccentColor,
+    isDarkMode,
+    toggleDarkMode
+  }), [accentColor, isDarkMode]);
+
+  return (
+    <ThemeContext.Provider value={value}>
+      {children}
+    </ThemeContext.Provider>
+  );
 };

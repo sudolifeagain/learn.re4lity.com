@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo, useContext, useCallback } 
 import { useParams } from 'react-router-dom';
 import Player from '../components/Player';
 import Notes from '../components/Notes';
+import SubtitleSearch from '../components/SubtitleSearch';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import ThemeSwitcher from '../components/ThemeSwitcher';
@@ -35,6 +36,7 @@ const StudyPage = ({ videoList }) => {
   const [activeSubtitleIndex, setActiveSubtitleIndex] = useState(null); // (NEW)
   const [recordingMemoIndex, setRecordingMemoIndex] = useState(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [searchHighlightIndex, setSearchHighlightIndex] = useState(null);
   const fileInputRef = useRef(null);
 
   const {
@@ -207,6 +209,15 @@ const StudyPage = ({ videoList }) => {
         <header className="study-header">
           <h2>{videoData.title}</h2>
           <div className="header-controls">
+            <SubtitleSearch
+              subtitles={subtitles}
+              onResultSelect={(index) => {
+                setSearchHighlightIndex(index);
+                if (index !== null && rowRefs.current[index]) {
+                  rowRefs.current[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+              }}
+            />
             <ThemeSwitcher />
             <button className="btn" onClick={() => setIsSettingsModalOpen(true)}>⚙️ 設定</button>
             <button className="btn" onClick={() => setIsPreviewMode(p => !p)}>
@@ -265,7 +276,7 @@ const StudyPage = ({ videoList }) => {
               <div
                 key={subtitle.time + index}
                 ref={el => rowRefs.current[index] = el}
-                className={`content-row ${memos[index]?.isBookmark ? 'bookmarked' : ''} ${activeSubtitleIndex === index ? 'active' : ''}`}
+                className={`content-row ${memos[index]?.isBookmark ? 'bookmarked' : ''} ${activeSubtitleIndex === index ? 'active' : ''} ${searchHighlightIndex === index ? 'search-highlight' : ''}`}
               >
                 <div className="subtitle-cell">
                   <div
